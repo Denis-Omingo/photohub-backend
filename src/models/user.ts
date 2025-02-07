@@ -9,6 +9,12 @@ const userSchema=new mongoose.Schema({
         type: String,
         required: true
     },
+    name:{
+        type: String,
+    },
+    userName:{
+        type: String,
+    },
     addressLine1:{
         type: String,
     },
