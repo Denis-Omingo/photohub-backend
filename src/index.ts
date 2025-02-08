@@ -3,6 +3,7 @@ import cors from "cors";
 import "dotenv/config";
 import mongoose from "mongoose";
 import MyUserRoute from "./routes/MyUserRoute"
+import LogOutRoute from "./routes/LogOutRoute"
 
 mongoose.connect(process.env.MONGODB_CONNECTION_STRING as string)
 .then(()=>{
@@ -11,9 +12,13 @@ mongoose.connect(process.env.MONGODB_CONNECTION_STRING as string)
 
 const app=express();
 app.use(express.json()); 
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5173", // Match your frontend URL
+  credentials: true,              // Allow cookies to be sent
+}));
 
-app.use("/api/my/user", MyUserRoute)
+app.use("/api/user", MyUserRoute)
+app.use("/api/logout", LogOutRoute)
 
 app.listen(7000, ()=>{
     console.log("Server started on localhost: 7000");

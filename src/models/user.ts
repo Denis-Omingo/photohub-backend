@@ -4,16 +4,19 @@ const userSchema=new mongoose.Schema({
     userId:{
         type: String,
         required: true,
+        unique: true
     },
     email:{
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     name:{
         type: String,
     },
     userName:{
         type: String,
+        unique: true
     },
     addressLine1:{
         type: String,
