@@ -13,8 +13,8 @@ mongoose.connect(process.env.MONGODB_CONNECTION_STRING as string)
 const app=express();
 app.use(express.json()); 
 app.use(cors({
-  origin: "http://localhost:5173", // Match your frontend URL
-  credentials: true,              // Allow cookies to be sent
+  origin: "http://localhost:5173", // Specify your frontend's URL
+  credentials: true,       
 }));
 
 app.use("/api/user", MyUserRoute)

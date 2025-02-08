@@ -9,7 +9,7 @@ const createCurrentUser = async (req: Request, res: Response): Promise<any> => {
     console.log("request body", req.body);
     const { userId, email } = req.body;
 
-    let user = await User.findOne({ userId });
+    let user = await User.findOne({ email});
 
     if (!user) {
       user = new User(req.body);
@@ -25,10 +25,11 @@ const createCurrentUser = async (req: Request, res: Response): Promise<any> => {
 
     // Set HTTP-Only Secure Cookie
     res.cookie("auth_token", token, {
-      httpOnly: true, 
-      sameSite: "lax",            // Helps with cross-origin cookie handling. For production change it to strict and add secure to be true
-      maxAge: 7 * 24 * 60 * 60 * 1000, 
+      httpOnly: true,
+      sameSite: "lax",     // For cross-origin requests
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+    
 
     return res.status(200).json({
       token,
@@ -44,6 +45,28 @@ const createCurrentUser = async (req: Request, res: Response): Promise<any> => {
     return res.status(500).json({ message: "Error creating user" });
   }
 };
+
+const updateCurrentUser=async (req:Request, res:Response):Promise<any>=>{
+  try{
+    const{email,name, addressLine1, country,city,userName}=req.body;
+    const user=await User.findOne({email});
+
+    if(!user){
+      return res.status(404).json({message:"User not found"})
+    }
+
+    user.name=name;
+    user.addressLine1=addressLine1;
+    user.city=city;
+    user.country=country;
+    user.userName=userName;
+
+    await user.save();
+  }catch(error){
+    console.log(error)
+    res.status(500).json({message: "Error in updating user!"})
+  }
+}
 
 //logout
 
@@ -61,5 +84,5 @@ const logoutUser = async (req: Request, res: Response): Promise<any> => {
   }
 };
 
-export default { createCurrentUser, logoutUser };
+export default { createCurrentUser, logoutUser,updateCurrentUser };
 
