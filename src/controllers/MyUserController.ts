@@ -1,32 +1,65 @@
-
 import { Request, Response } from "express";
-import User from '../models/user';
+import jwt from "jsonwebtoken";
+import User from "../models/user";
 
-  const createCurrentUser = async (req: Request, res: Response):Promise<any> => {
-    try {
-      console.log("request body", req.body);
-      const {userId} = req.body;
-  
-      const existingUser = await User.findOne({userId});
-  
-      if (existingUser) {
-        return res.status(200).send();
-      }
-  
-      const newUser = new User(req.body);
-      await newUser.save();
-  
-      return res.status(201).json(newUser.toObject()); 
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "Error creating user" }); 
+const SECRET_KEY = process.env.JWT_SECRET || "secret=hhgcfddf-key";
+
+const createCurrentUser = async (req: Request, res: Response): Promise<any> => {
+  try {
+    console.log("request body", req.body);
+    const { userId, email } = req.body;
+
+    let user = await User.findOne({ userId });
+
+    if (!user) {
+      user = new User(req.body);
+      await user.save();
     }
-  };
-  
 
-const MyUserController = {
-    createCurrentUser
-  };
-  
-  export default MyUserController;
-  
+    //  Generate JWT token
+    const token = jwt.sign(
+      { userId: user.userId, email: user.email },
+      SECRET_KEY,
+      { expiresIn: "7d" }
+    );
+
+    // Set HTTP-Only Secure Cookie
+    res.cookie("auth_token", token, {
+      httpOnly: true, 
+      sameSite: "lax",            // Helps with cross-origin cookie handling. For production change it to strict and add secure to be true
+      maxAge: 7 * 24 * 60 * 60 * 1000, 
+    });
+
+    return res.status(200).json({
+      token,
+      userId: user.userId,
+      email: user.email,
+      name: user.name || null,
+      addressLine1: user.addressLine1 || null,
+      username: user.userName || null,
+      country: user.country || null,
+    });
+  } catch (error) {
+    console.error(error, "auto error");
+    return res.status(500).json({ message: "Error creating user" });
+  }
+};
+
+//logout
+
+const logoutUser = async (req: Request, res: Response): Promise<any> => {
+  try {
+      res.clearCookie("auth_token", {
+          httpOnly: true,
+          sameSite: "lax",
+          secure: false,
+      });
+      return res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+      console.error("Logout error:", error);
+      return res.status(500).json({ message: "Logout failed" });
+  }
+};
+
+export default { createCurrentUser, logoutUser };
+
