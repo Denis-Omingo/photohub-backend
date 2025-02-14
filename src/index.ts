@@ -8,6 +8,7 @@ import MyAlbumRoute from "./routes/MyAlbumRoute"
 import MyImageRoute from "./routes/MyImageRoute"
 
 mongoose.connect(process.env.MONGODB_CONNECTION_STRING as string)
+
 .then(()=>{
   console.log("Connected to database!")
 });
@@ -15,7 +16,7 @@ mongoose.connect(process.env.MONGODB_CONNECTION_STRING as string)
 const app=express();
 app.use(express.json()); 
 app.use(cors({
-  origin: "http://localhost:5173", 
+  origin: process.env.FRONTEND_BASE_URL, 
   credentials: true,       
 }));
 
