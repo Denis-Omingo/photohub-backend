@@ -174,6 +174,32 @@ export const getMyAlbums = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
+//GET ALL ALBUS OF A SELECTED User
+export const getUserAlbums = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id:albumId } = req.params;
+  
+
+    console.log("ALBUM ID FROM CONTROLLER",albumId)
+    if (!mongoose.Types.ObjectId.isValid(albumId)) {
+      res.status(400).json({ message: "Invalid album ID" });
+      return;
+    }
+
+    const album = await MyAlbum.findById(new mongoose.Types.ObjectId(albumId));
+    if (!album) {
+      res.status(404).json({ message: "Album not found" });
+      return;
+    }
+
+    res.status(200).json(album);
+    console.log(album)
+  } catch (error) {
+    console.error("Error fetching album:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 //GET ALL IMAGES AN ALBUM
 export const getMyImages = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -206,4 +232,4 @@ res.status(200).json(imagesWithFullPath);
   }
 };
 
-export default { createMyAlbum, getMyAlbums,updateMyAlbum,getMyImages  };
+export default { createMyAlbum, getMyAlbums,updateMyAlbum,getMyImages, getUserAlbums  };
