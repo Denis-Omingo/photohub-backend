@@ -191,7 +191,15 @@ export const getMyImages = async (req: Request, res: Response): Promise<void> =>
       return;
     }
     console.log("Album::FROM CONTROLLER", album)
-    res.status(200).json(album.images);
+    
+    // res.status(200).json(album.images);
+    const BACKEND_URL = `${req.protocol}://${req.get("host")}`;
+    const imagesWithFullPath = album.images?.map((image: any) => ({
+      ...image.toObject(),  // Ensure it's a plain object
+      filePath: `${BACKEND_URL}${image.filePath}`
+    }));
+res.status(200).json(imagesWithFullPath);
+
   } catch (error) {
     console.error("Error fetching album images:", error);
     res.status(500).json({ error: "Internal server error" });

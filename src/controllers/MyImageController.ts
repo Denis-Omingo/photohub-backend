@@ -55,14 +55,10 @@ const uploadImagesToAlbum = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    const file=req.file;
-    const imageName = file.filename.length > 20
-    ? file.filename.substring(0, 20) + "..."
-    : file.filename;
+    const file = req.file;
 
-
-   
-    const filePath = `/uploads/${imageName}`;
+    
+    const filePath = `/uploads/${file.filename}`;
 
     // Create new image
     const newImage = new MyImage({
