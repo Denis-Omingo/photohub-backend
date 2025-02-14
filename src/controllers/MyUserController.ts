@@ -163,6 +163,19 @@ const updateCurrentUser = async (req: Request, res: Response): Promise<void> => 
 
 
 /**
+ * Get all users from the database
+ */
+const getAllUsers = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const users = await User.find({}, { password: 0 });
+    res.status(200).json({ users });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+/**
  * Logs out the user by clearing authentication cookies
  */
 const logoutUser = async (req: Request, res: Response): Promise<void> => {
@@ -180,4 +193,4 @@ const logoutUser = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export default { getCurrentUser,createCurrentUser, updateCurrentUser, logoutUser };
+export default { getCurrentUser,createCurrentUser, updateCurrentUser, logoutUser, getAllUsers };
