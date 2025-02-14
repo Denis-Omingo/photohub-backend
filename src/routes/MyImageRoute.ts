@@ -4,6 +4,6 @@ import uploadMiddleware from "../middlewares/uploadMiddleware";
 const router =Router();
 
 router.post("/upload-image/:id", uploadMiddleware, MyImageController.uploadImagesToAlbum);
-
+router.put("/update-image/:id",MyImageController.updateImageFilename)
 
 export default router;

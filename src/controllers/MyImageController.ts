@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import fs from "fs";
+import path from "path";
 import MyAlbum from "../models/album";
 import MyImage from "../models/image";
 
@@ -85,5 +87,69 @@ const uploadImagesToAlbum = async (req: Request, res: Response): Promise<void> =
   }
 };
 
+//Update Image Name
+// Update image filename
+const updateImageFilename = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = getUserIdFromToken(req);
+    if (!userId) {
+      res.status(401).json({ error: "Unauthorized: Invalid or missing token" });
+      return;
+    }
 
-export default { uploadImagesToAlbum };
+    const { id: imageId } = req.params;
+    const { newFilename } = req.body;
+
+    if (!imageId || !mongoose.Types.ObjectId.isValid(imageId)) {
+      res.status(400).json({ error: "Invalid image ID" });
+      return;
+    }
+
+    if (!newFilename || newFilename.length > 20) {
+      res.status(400).json({ error: "Filename must be less than 20 characters long" });
+      return;
+    }
+
+    const image = await MyImage.findById(imageId).populate({
+      path: "album",
+      select: "user",
+    });
+
+    if (!image) {
+      res.status(404).json({ error: "Image not found" });
+      return;
+    }
+
+    // Ensure the image belongs to the authenticated user
+    if ((image.album as any).user.toString() !== userId) {
+      res.status(403).json({ error: "You do not have permission to update this image" });
+      return;
+    }
+
+    const fileExt = path.extname(image.filename || "");
+    const updatedFilename = `${newFilename}${fileExt}`;
+    const oldFilePath = path.join(__dirname, "..", "uploads", image.filename || "");
+    const newFilePath = path.join(__dirname, "..", "uploads", updatedFilename);
+
+    // Rename file in the file system
+    fs.renameSync(oldFilePath, newFilePath);
+
+    // Update database entry
+    image.filename = updatedFilename;
+    image.filePath = `/uploads/${updatedFilename}`;
+    await image.save();
+
+    res.status(200).json({
+      message: "Image filename updated successfully",
+      image,
+    });
+  } catch (error) {
+    console.error("Error updating image filename:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+export default { uploadImagesToAlbum, updateImageFilename};
+
+
