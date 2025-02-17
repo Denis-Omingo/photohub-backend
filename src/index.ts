@@ -16,8 +16,10 @@ mongoose.connect(process.env.MONGODB_CONNECTION_STRING as string)
 const app=express();
 app.use(express.json()); 
 app.use(cors({
-  origin: process.env.FRONTEND_BASE_URL, 
-  credentials: true,       
+  origin: process.env.FRONTEND_BASE_URL || "https://myalbums.onrender.com", 
+  methods: "GET,POST,PUT,DELETE,OPTIONS",
+  allowedHeaders: "Content-Type,Authorization",
+  credentials: true,  
 }));
 
 app.use("/api/user", MyUserRoute)
