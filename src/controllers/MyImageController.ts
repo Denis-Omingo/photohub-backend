@@ -1,8 +1,11 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import jwt, { JwtPayload } from "jsonwebtoken";
+<<<<<<< HEAD
 import fs from "fs";
 import path from "path";
+=======
+>>>>>>> dev
 import MyAlbum from "../models/album";
 import MyImage from "../models/image";
 
@@ -24,6 +27,10 @@ export const getUserIdFromToken = (req: Request): string | null => {
   }
 };
 
+<<<<<<< HEAD
+=======
+//Upload image to album
+>>>>>>> dev
 const uploadImagesToAlbum = async (req: Request, res: Response): Promise<void> => {
   try {
     console.log("Incoming request to upload an image");
@@ -87,16 +94,28 @@ const uploadImagesToAlbum = async (req: Request, res: Response): Promise<void> =
   }
 };
 
+<<<<<<< HEAD
 //Update Image Name
 // Update image filename
 const updateImageFilename = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = getUserIdFromToken(req);
     if (!userId) {
+=======
+//Get images of a logged in user 
+const getUserImages = async (req: Request, res: Response): Promise<void> => {
+  try {
+    console.log("Fetching all images for the logged-in user");
+
+    const userId = getUserIdFromToken(req);
+    if (!userId) {
+      console.error("Unauthorized: Missing or invalid token");
+>>>>>>> dev
       res.status(401).json({ error: "Unauthorized: Invalid or missing token" });
       return;
     }
 
+<<<<<<< HEAD
     const { id: imageId } = req.params;
     const { newFilename } = req.body;
 
@@ -145,11 +164,96 @@ const updateImageFilename = async (req: Request, res: Response): Promise<void> =
     });
   } catch (error) {
     console.error("Error updating image filename:", error);
+=======
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      res.status(400).json({ error: "Invalid user ID" });
+      return;
+    }
+
+    // Find all albums owned by the user
+    const userAlbums = await MyAlbum.find({ user: userId }).select("_id");
+
+    if (!userAlbums.length) {
+      res.status(200).json([]); // Return an empty array if user has no albums
+      return;
+    }
+
+    const albumIds = userAlbums.map(album => album._id);
+
+    // Find all images that belong to the user's albums
+    const images = await MyImage.find({ album: { $in: albumIds } }).sort({ createdAt: -1 });
+
+    res.status(200).json(images);
+    console.log(images);
+  } catch (error) {
+    console.error("Error fetching user images:", error);
+>>>>>>> dev
     res.status(500).json({ error: "Internal server error" });
   }
 };
 
 
+<<<<<<< HEAD
 export default { uploadImagesToAlbum, updateImageFilename};
 
 
+=======
+//Update title of selected image of a current user
+const updateMyImage = async (req: Request, res: Response): Promise<void> => {
+  console.log("UPDATE USER REQUEST INITIATED")
+  try {
+    const userId = getUserIdFromToken(req);
+    if (!userId) {
+      res.status(401).json({ success: false, message: "Unauthorized: Invalid or missing token" });
+      return;
+    }
+
+    const { id:imageId } = req.params;
+    const { name: newName } = req.body;
+
+    if (!imageId || !mongoose.Types.ObjectId.isValid(imageId)) {
+      res.status(400).json({ success: false, message: "Invalid image ID" });
+      return;
+    }
+
+    if (!newName) {
+      res.status(400).json({ success: false, message: "New name is required" });
+      return;
+    }
+
+    const image = await MyImage.findById(imageId);
+    if (!image) {
+      res.status(404).json({ success: false, message: "Image not found" });
+      return;
+    }
+
+    // Ensure the user owns the image by checking the album ownership
+    const album = await MyAlbum.findOne({ _id: image.album, user: userId });
+    if (!album) {
+      res.status(403).json({ success: false, message: "Forbidden: You do not own this image" });
+      return;
+    }
+
+    image.filename = newName;
+    await image.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Image name updated successfully",
+      updatedImage: {
+        _id: image._id.toString(),
+        name: newName,
+        filename: image.filename,
+        filePath: image.filePath,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating image:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+
+
+export default { uploadImagesToAlbum, getUserImages, updateMyImage };
+>>>>>>> dev
